@@ -1,0 +1,24 @@
+class CorrelationIdHandler : DelegatingHandler
+{
+    private readonly IHttpContextAccessor httpContextAccessor;
+
+    public CorrelationIdHandler(IHttpContextAccessor httpContextAccessor)
+    {
+        this.httpContextAccessor = httpContextAccessor;
+    }
+
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (httpContextAccessor.HttpContext.Request.Headers.TryGetValue("x-correlation-id", out var correlationId))
+        {
+            // avoid duplicating header on polly retry
+            if (!request.Headers.TryGetValues("x-correlation-id", out var _))
+            {
+                request.Headers.Add("x-correlation-id", correlationId.ToString());
+            }
+        }
+
+        return base.SendAsync(request, cancellationToken);
+    }
+}
