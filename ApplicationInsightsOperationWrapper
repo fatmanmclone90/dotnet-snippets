@@ -1,0 +1,49 @@
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
+
+namespace Whds.Indexing.Common.ApplicationInsights
+{
+    public class ApplicationInsightsOperationWrapper : IApplicationInsightsOperationWrapper
+    {
+        private readonly TelemetryClient _telemetryClient;
+
+        public ApplicationInsightsOperationWrapper(TelemetryClient telemetryClient)
+        {
+            _telemetryClient = telemetryClient;
+        }
+        public IOperationHolder<T> InitializeAppInsightsOperation<T>(
+            string operationName,
+            Dictionary<string, string> globalProperties)
+            where T : OperationTelemetry, new()
+        {
+            var operation = _telemetryClient.StartOperation<T>(operationName);
+
+            foreach (var property in globalProperties)
+            {
+                operation.Telemetry.Context.GlobalProperties.Add(property.Key, property.Value);
+            }
+
+            return operation;
+        }
+
+        public void StopAppInsightsOperation<T>(IOperationHolder<T> operation)
+            where T : OperationTelemetry
+        {
+            _telemetryClient.StopOperation(operation);
+        }
+
+        public void SetOperationSuccess<T>(IOperationHolder<T> operation, bool isSuccess)
+            where T : OperationTelemetry
+        {
+            operation.Telemetry.Success = isSuccess;
+
+            // See https://github.com/microsoft/ApplicationInsights-dotnet/issues/2248
+            if (!isSuccess && typeof(T) == typeof(RequestTelemetry))
+            {
+              ((IOperationHolder<RequestTelemetry>)operation).Telemetry.ResponseCode = "500";
+            }
+        }
+    }
+}
