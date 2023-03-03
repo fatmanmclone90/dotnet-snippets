@@ -1,11 +1,10 @@
- Assert.IsFalse(isValidDocument);
- _loggerMock.Verify(
-    x => x.Log(
-    LogLevel.Warning,
-       EventIds.MissingRequiredDocumentProperty,
-        It.Is<It.IsAnyType>((message, _) => string.Equals(
-            "Missing required property name(s): correlationId,@timestamp.", 
-            message.ToString())),
-        It.IsAny<Exception>(),
-        It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)),
-    Times.Once);
+_loggerMock.Verify(
+   x => x.Log(
+   LogLevel.Warning,
+      EventIds.MissingRequiredDocumentProperty,
+       It.Is<It.IsAnyType>((message, _) => string.Equals(
+           "Missing required property name(s): correlationId,@timestamp.", 
+           message.ToString())),
+       It.IsAny<Exception>(),
+       It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)),
+   Times.Once);
