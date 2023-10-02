@@ -17,3 +17,13 @@ _loggerMock.Verify(
          It.IsAny<It.IsAnyType>(),
          It.IsAny<Exception>(),
          It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)));
+
+            // Assert
+            _loggerMock.Verify(
+               x => x.Log(
+               LogLevel.Warning,
+                   EventIds.ShuttingDownWithUnsavedItems,
+                   It.IsAny<It.IsAnyType>(),
+                   It.IsAny<Exception>(),
+                   It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+               Times.Never());
